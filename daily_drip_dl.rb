@@ -2,25 +2,28 @@ require 'HTTParty'
 require 'Nokogiri'
 require 'JSON'
 
-def topic_urls_for(index_url:)
-  puts "Gathering topic urls from #{index_url}"
-  page = HTTParty.get(index_url)
-  parsed_page = Nokogiri::HTML(page)
+def parse_page(url:)
+  page = HTTParty.get(url)
+  Nokogiri::HTML(page)
+end
 
-  parsed_page.css('div.drips.topics').css('a').collect do |link|
+def drips_for(topic:)
+  topic_url = "https://www.dailydrip.com/topics/#{topic}"
+  puts "Gathering topic urls from #{topic_url}"
+
+  parse_page(url: topic_url).css('div.drips.topics').css('a').collect do |link|
     'https://www.dailydrip.com' + link.attributes['href'].value
   end
 end
 
-def download_url_for(topic_url:)
-  page = HTTParty.get(topic_url)
-  parse_page = Nokogiri::HTML(page)
-
-  drip_script = parse_page.css('script').select do |script|
+def media_script_for(drip:)
+  parse_page(url: drip).css('script').find do |script|
     script.children.to_s.include? 'DailyDrip.Drip.show'
   end
+end
 
-  tag = drip_script.first.children.to_s.strip
+def media_for(drip:)
+  tag = media_script_for(drip: drip).children.to_s.strip
   tag.slice! 'DailyDrip.Drip.show('
   tag.chomp!(')')
 
@@ -28,17 +31,28 @@ def download_url_for(topic_url:)
   json['video']['url']
 end
 
-index_url = 'https://www.dailydrip.com/topics/elixir/'
-topic_urls = topic_urls_for(index_url: index_url)
+def download_media_for(drip:, location:, topic:)
+  media = media_for(drip: drip)
+  system "wget -c #{media}  -P #{location}/#{topic}"
+end
 
-total_size = topic_urls.size
-puts "#{total_size} found"
+###################################################
+###                 CLI Starts                  ###
+###################################################
 
-topic_urls.each_with_index do |topic_url, index|
-  puts "Downloading #{index + 1} of #{total_size}"
-  puts topic_url
-  download_url = download_url_for(topic_url: topic_url)
-  system "wget -c #{download_url}"
+puts 'Which topic do you want to download?'
+topic = gets.chomp
+
+puts 'Where do you want to save the videos?'
+location = gets.chomp
+
+drips = drips_for(topic: topic)
+
+drips.each_with_index do |drip, index|
+  puts "Downloading #{index + 1} of #{drips.size}"
+  puts drip
+
+  download_media_for(drip: drip, location: location, topic: topic)
 end
 
 puts 'Done!!'
