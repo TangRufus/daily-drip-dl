@@ -33,7 +33,7 @@ end
 
 def download_media_for(drip:, location:, topic:)
   media = media_for(drip: drip)
-  system "wget -c #{media}  -P #{location}/#{topic}"
+  system "wget -c #{media} -P #{location}/#{topic}"
 end
 
 ###################################################
