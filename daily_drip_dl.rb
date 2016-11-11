@@ -13,7 +13,7 @@ def drips_for(topic:)
 
   parse_page(url: topic_url).css('div.drips.topics').css('a').collect do |link|
     'https://www.dailydrip.com' + link.attributes['href'].value
-  end
+  end.reverse
 end
 
 def media_script_for(drip:)
