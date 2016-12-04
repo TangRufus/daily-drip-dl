@@ -13,7 +13,7 @@ def drips_for(topic:)
   topic_url = "https://www.dailydrip.com/topics/#{topic}"
   puts "Gathering topic urls from #{topic_url}"
 
-  parse_page(url: topic_url).css('div.drips.topics').css('a').collect do |link|
+  parse_page(url: topic_url).css('.topic_drips_contents a').collect do |link|
     'https://www.dailydrip.com' + link.attributes['href'].value
   end.reverse
 end
@@ -49,6 +49,8 @@ puts 'Where do you want to save the videos?'
 location = gets.chomp
 
 drips = drips_for(topic: topic)
+
+puts "#{drips.length} drips found"
 
 drips.each_with_index do |drip, index|
   puts "Downloading #{index + 1} of #{drips.size}"
