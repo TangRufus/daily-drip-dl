@@ -4,7 +4,7 @@ GEM
     httparty (0.14.0)
       multi_xml (>= 0.5.2)
     mini_portile2 (2.1.0)
-    multi_xml (0.5.5)
+    multi_xml (0.6.0)
     nokogiri (1.6.8.1)
       mini_portile2 (~> 2.1.0)
 
